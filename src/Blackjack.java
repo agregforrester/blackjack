@@ -1,6 +1,6 @@
-// shuffle and deal, print cards that player has, type hit or stand, computer goes, says hit or stand if 16 or less or if 17 or greater, switch back to player
-
-
+// ask how many chips to start with, ask how many to bet this round,
+// shuffle and deal, print cards that player has, type hit or stand,
+// computer goes, says hit or stand if 16 or less or if 17 or greater, switch back to player
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,6 +16,8 @@ public class Blackjack {
     private List<Card> deck;
     private final Scanner in;
     private final boolean multiplayer;
+    private boolean computerStand;
+    private boolean playerStand;
     private ArrayList<Card> has = new ArrayList<>();
     private ArrayList<Card> doesNotHave = new ArrayList<>();
 
@@ -33,29 +35,23 @@ public class Blackjack {
         while (true) {
             if (whoseTurn == 'P') {
                 whoseTurn = takeTurn(false);
-                if (player.findAndRemoveBooks()) {
-                    System.out.println("PLAYER: Oh, that's a book!");
-                    showBooks(false);
-                }
             } else if (whoseTurn == 'C') {
                 whoseTurn = takeTurn(true);
-                if (computer.findAndRemoveBooks()) {
-                    if (multiplayer) {
-                        System.out.println("PLAYER 2: Oh, that's a book!");
-                    } else {
-                        System.out.println("CPU: Oh, that's a book!");
-                    }
-                    showBooks(true);
-
-                }
             }
-            if (player.getBooks().size() + computer.getBooks().size() == 13) {
-                if (player.getBooks().size() > computer.getBooks().size()) {
-                    System.out.println("\nCongratulations, PLAYER win!");
-                } else if (multiplayer && computer.getBooks().size() > player.getBooks().size()) {
-                    System.out.println("/nCongratulations, PLAYER 2 win!");
-                } else {
+
+            if (playerStand && computerStand) {
+                if (player.handSum() > computer.handSum()) {
+                    showHand(false);
+                    showHand(true);
+                    System.out.println("\nCONGRATULATIONS, PLAYER win!");
+                } else if (computer.handSum() > player.handSum() && computer.handSum() <= 21){
+                    showHand(false);
+                    showHand(true);
                     System.out.println("\nOh, better luck next time. This game goes to the computer...");
+                } else if (player.handSum() == computer.handSum() && computer.handSum() <= 21 && player.handSum() <= 21) {
+                    showHand(false);
+                    showHand(true);
+                    System.out.println("\nIt's a tie!");
                 }
                 break;
             }
@@ -88,95 +84,49 @@ public class Blackjack {
 
         Card card = requestCard(cpu);
         if (card == null) {
-            return cpu ? 'C' : 'P';
+            return cpu ? 'P' : 'C';
         }
 
-
-        if (!cpu) {
-            if (computer.hasCard(card)) {
-                if (multiplayer) {
-                    System.out.println("PLAYER 2: Yup, here you go!");
-                } else {
-                    System.out.println("CPU: Yup, here you go!");
-                    has.add(card);
-                }
-                computer.relinquishCard(player, card);
-
-                return 'P';
-            } else {
-                if (multiplayer) {
-                    System.out.println("PLAYER 2: Nope, go fish!");
-                } else {
-                    System.out.println("CPU: Nope, go fish!");
-                }
-
-                player.takeCard(deck.remove(0));
-
-                return 'C';
-            }
-        } else {
-            if (player.hasCard(card)) {
-                if (multiplayer) {
-                    System.out.println("PLAYER: Yup, here you go!");
-                } else {
-                    System.out.println("CPU: Oh, you do? Well, hand it over!");
-                }
-                player.relinquishCard(computer, card);
-
-                return 'C';
-            } else {
-                if (multiplayer) {
-                    System.out.println("PLAYER 2: Ah, I guess I'll go fish...");
-                } else {
-                    System.out.println("CPU: Ah, I guess I'll go fish...");
-                    doesNotHave.add(card);
-                }
-                computer.takeCard(deck.remove(0));
-
-                return 'P';
-            }
-        }
+        return 'x';
     }
 
     private Card requestCard(boolean cpu) {
         Card card = null;
 
-
-        while (card == null) {
+        while (true) {
             if (!cpu) {
-                if (player.getHand().size() == 0) {
-                    player.takeCard(deck.remove(0));
-                    return null;
-                } else {
-                    System.out.print("PLAYER: Will you hit or stand? ");
-                    String rank = in.nextLine().trim().toUpperCase();
+                    System.out.print("PLAYER: Will you hit or stand?");
+                    String answer = in.nextLine().trim().toUpperCase();
 
-                    if (rank.equals("hit") || rank.equals("HIT") || rank.equals("Hit")) {
+                    if (answer.equals("HIT")) {
                         player.takeCard(deck.remove(0));
-
-                    } else if (rank.equals("stand") || rank.equals("STAND") || rank.equals("Stand")) {
+                        return null;
+                    } else if (answer.equals("STAND")) {
+                        playerStand = true;
                         return null;
                     }
 
-                    return null;
-                }
-            } else if (multiplayer) {
-                System.out.print("PLAYER 2: Got any... ");
-                String rank = in.nextLine().trim().toUpperCase();
-                card = Card.getCardByRank(rank);
-            } else {
-                if (computer.getHand().size() == 0) {
-                    computer.takeCard(deck.remove(0));
+                return null;
 
-                    return null;
-                } else {
-                    card = computer.getCardByNeed();
-                    System.out.println("CPU: Got any... " + card.getRank());
+            } else {
+                    System.out.println("\nCPU: Will you hit or stand?");
+                    String answer = computer.getCardByNeed();
+
+
+
+                    if (answer.equals("HIT")) {
+                        computer.takeCard(deck.remove(0));
+                        String hit = "The CPU will hit.";
+                        System.out.println(hit);
+                        return null;
+                    } else if (answer.equals("STAND")) {
+                        computerStand = true;
+                        System.out.println("The CPU will stand.");
+                        return null;
+                    }
+
                 }
             }
-        }
-
-        return card;
     }
 
 
@@ -185,24 +135,24 @@ public class Blackjack {
             System.out.println("\nPLAYER hand: " + player.getHand());
         } else if (cpu && multiplayer) {
             System.out.println("\nPLAYER 2 hand: " + computer.getHand());
+        } else {
+            System.out.println("CPU hand: " + computer.getHand());
         }
     }
 
 
     public static void main(String[] args) {
-        System.out.println("#########################################################");
-        System.out.println("#                                                       #");
-        System.out.println("#   ####### #######   ####### ####### ####### #     #   #");
-        System.out.println("#   #       #     #   #          #    #       #     #   #");
-        System.out.println("#   #  #### #     #   #####      #    ####### #######   #");
-        System.out.println("#   #     # #     #   #          #          # #     #   #");
-        System.out.println("#   ####### #######   #       ####### ####### #     #   #");
-        System.out.println("#                                                       #");
-        System.out.println("#   A human v. CPU rendition of the classic card game   #");
-        System.out.println("#   Blackjack. Play the game, read and modify the code,   #");
-        System.out.println("#   and make it your own!                               #");
-        System.out.println("#                                                       #");
-        System.out.println("#########################################################");
+        System.out.println("###############################################################################");
+        System.out.println("#                                                                             #");
+        System.out.println("#   ####### #       ####### ####### #     #       # ####### ####### #     #   #");
+        System.out.println("#   #     # #       #     # #       #   #         # #     # #       #   #     #");
+        System.out.println("#   ######  #       ####### #       ####          # ####### #       ####      #");
+        System.out.println("#   #     # #       #     # #       #   #   #     # #     # #       #   #     #");
+        System.out.println("#   ####### ####### #     # ####### #     # ####### #     # ####### #     #   #");
+        System.out.println("#                                                                             #");
+        System.out.println("#   A human v. CPU rendition of the classic card game Blackjack               #");
+        System.out.println("#                                                                             #");
+        System.out.println("###############################################################################");
 
 
         String option;

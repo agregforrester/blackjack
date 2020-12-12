@@ -16,87 +16,43 @@ public class Player {
         return hand;
     }
 
-    public List<String> getBooks() {
-        return books;
-    }
-
     public void takeCard(Card card) {
         hand.add(card);
         sortHand();
     }
 
-    public boolean hasCard(Card card) {
-        for (Card c : hand) {
-            if (c.getRank().equals(card.getRank())) {
-                return true;
-            }
-        }
+    public String getCardByNeed() {
+        //decide if the cpu needs to hit or stand
+        int cardRank = 0;
+        for (int i = hand.size() - 1; i >= 0; i--) {
+            int nextCardRank = 0;
 
-        return false;
-    }
-
-    public void relinquishCard(Player player, Card card) {
-        int index = findCard(card);
-
-        if (index != -1) {
-            Card c = hand.remove(index);
-            player.getHand().add(c);
-
-            sortHand();
-            player.sortHand();
-        }
-    }
-
-    public boolean findAndRemoveBooks() {
-        for (int i = 0; i < hand.size() - 1; i++) {
-            int frequency = 1;
-
-            for (int j = i + 1; j < hand.size(); j++) {
-                if (hand.get(i).getRank().equals(hand.get(j).getRank())) {
-                    frequency++;
+            try {
+                nextCardRank = Integer.parseInt(hand.get(i).getRank());
+            } catch (NumberFormatException e) {
+                switch (hand.get(i).getRank()) {
+                    case "T":
+                    case "J":
+                    case "Q":
+                    case "K":
+                        nextCardRank = 10;
+                    case "A":
+                        nextCardRank = 11;
                 }
             }
 
-            if (frequency == 4) {
-                return removeSets(i);
-            }
-        }
-
-        return false;
-    }
-
-    public Card getCardByNeed() {
-        //randomize the cards that the cpu will pick
-        int count = 1;
-        ArrayList<Integer> deck = new ArrayList<>();
-        for (int i = 0; i < hand.size() - 1; i++) {
-            if (hand.get(i).getRank().equals(hand.get(i + 1).getRank())) {
-                count++;
-                if (i == hand.size() - 2) {
-                    deck.add(i);
-                }
+            if (cardRank + nextCardRank >= 17) {
+                return "STAND";
+            } else if (i != 0) {
+                cardRank += nextCardRank;
             } else {
-                if (count >= 2) {
-                    deck.add(i);
-                    count = 1;
-                } else {
-                    count = 1;
-                }
+                return "HIT";
             }
         }
-        if (deck.size() < 2) {
-            return hand.get((int) (Math.random() * hand.size()));
-
-        } else {
-            return hand.get(deck.get((int) (Math.random() * deck.size())));
-        }
+        return "";
     }
 
-
-
-
-
-    private int findCard (Card card){
+    private int findCard(Card card){
         for (int i = 0; i < hand.size(); i++) {
             if (hand.get(i).getRank().equals(card.getRank())) {
                 return i;
@@ -133,4 +89,28 @@ public class Player {
         books.sort(Comparator.comparingInt(Card::getOrderedRank));
     }
 
+    public int handSum() {
+        int sum = 0;
+
+        for (Card card : hand) {
+            int nextCardRank = 0;
+
+            try {
+                nextCardRank = Integer.parseInt(card.getRank());
+            } catch (NumberFormatException e) {
+                switch (card.getRank()) {
+                    case "T":
+                    case "J":
+                    case "Q":
+                    case "K":
+                        nextCardRank = 10;
+                    case "A":
+                        nextCardRank = 11;
+                }
+
+                sum += nextCardRank;
+            }
+        }
+        return sum;
+    }
 }
