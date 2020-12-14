@@ -49,24 +49,4 @@ public class Card {
         }
         return -1;
     }
-    public static Card getCardByRank(String rank){
-        if(rank == null) return null;
-        if(rank.length() != 1) return null;
-
-        if(rank.equals("T") || rank.equals("J") || rank.equals("Q") || rank.equals("K") || rank.equals("A")){
-            return new Card(rank,null);
-        }
-        else{
-            try{
-                int number = Integer.parseInt(rank);
-
-                if(number > 1&& number < 10){
-                    return new Card(rank, null);
-                }
-            }catch (NumberFormatException e){
-                return null;
-            }
-        }
-        return null;
-    }
 }

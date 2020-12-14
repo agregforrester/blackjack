@@ -2,10 +2,7 @@
 // shuffle and deal, print cards that player has, type hit or stand,
 // computer goes, says hit or stand if 16 or less or if 17 or greater, switch back to player
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 public class Blackjack {
     private final String[] SUITS = {"C", "D", "H", "S"};
@@ -15,21 +12,27 @@ public class Blackjack {
     private final Player computer;
     private List<Card> deck;
     private final Scanner in;
-    private final boolean multiplayer;
     private boolean computerStand;
     private boolean playerStand;
+    private static double chips;
+    private static double wager;
     private ArrayList<Card> has = new ArrayList<>();
     private ArrayList<Card> doesNotHave = new ArrayList<>();
 
-    public Blackjack(boolean m) {
+    public Blackjack() {
         this.whoseTurn = 'P';
         this.player = new Player();
         this.computer = new Player();
         this.in = new Scanner(System.in);
-        this.multiplayer = m;
     }
 
     public void play() {
+
+        String answer = "";
+
+        System.out.println("\nPLAYER chips: " + (int) chips);
+        System.out.println("PLAYER wager: " + (int) wager);
+
         shuffleAndDeal();
 
         while (true) {
@@ -40,18 +43,93 @@ public class Blackjack {
             }
 
             if (playerStand && computerStand) {
-                if (player.handSum() > computer.handSum()) {
+                if (player.handSum() > computer.handSum() && player.handSum() == 21 && player.hand.size() == 2) {
                     showHand(false);
                     showHand(true);
-                    System.out.println("\nCONGRATULATIONS, PLAYER win!");
+                    System.out.println("\nBLACKJACK, PLAYER win!");
+                    chips += wager * 3/2;
+                    System.out.println("PLAYER chips: " + (int) chips);
+                    System.out.println("Keep going? (Y/N)");
+                    answer = in.next();
+                    if (answer.equals("Y") || answer.equals("y")) {
+                        new Blackjack().play();
+                    } else if (answer.equals("N") || answer.equals("n")) {
+                        System.out.println("\nSee ya next time!");
+                    }
+                } else if (player.handSum() > computer.handSum() && player.handSum() <= 21) {
+                    showHand(false);
+                    showHand(true);
+                    System.out.println("\nCongratulations, PLAYER win!");
+                    chips += wager;
+                    System.out.println("PLAYER chips: " + (int) chips);
+                    System.out.println("Keep going? (Y/N)");
+                    answer = in.next();
+                    if (answer.equals("Y") || answer.equals("y")) {
+                        new Blackjack().play();
+                    } else if (answer.equals("N") || answer.equals("n")) {
+                        System.out.println("\nSee ya next time!");
+                    }
                 } else if (computer.handSum() > player.handSum() && computer.handSum() <= 21){
                     showHand(false);
                     showHand(true);
                     System.out.println("\nOh, better luck next time. This game goes to the computer...");
+                    chips -= wager;
+                    System.out.println("PLAYER chips: " + (int) chips);
+                    System.out.println("Keep going? (Y/N)");
+                    answer = in.next();
+                    if (answer.equals("Y") || answer.equals("y")) {
+                        new Blackjack().play();
+                    } else if (answer.equals("N") || answer.equals("n")) {
+                        System.out.println("\nSee ya next time!");
+                    }
                 } else if (player.handSum() == computer.handSum() && computer.handSum() <= 21 && player.handSum() <= 21) {
                     showHand(false);
                     showHand(true);
                     System.out.println("\nIt's a tie!");
+                    System.out.println("Keep going? (Y/N)");
+                    answer = in.next();
+                    if (answer.equals("Y") || answer.equals("y")) {
+                        new Blackjack().play();
+                    } else if (answer.equals("N") || answer.equals("n")) {
+                        System.out.println("\nSee ya next time!");
+                    }
+                } else if (computer.handSum() > 21 && player.handSum() <= 21) {
+                    showHand(false);
+                    showHand(true);
+                    System.out.println("\nCongratulations, PLAYER win!");
+                    chips += wager;
+                    System.out.println("PLAYER chips: " + (int) chips);
+                    System.out.println("Keep going? (Y/N)");
+                    answer = in.next();
+                    if (answer.equals("Y") || answer.equals("y")) {
+                        new Blackjack().play();
+                    } else if (answer.equals("N") || answer.equals("n")) {
+                        System.out.println("\nSee ya next time!");
+                    }
+                } else if (player.handSum() > 21 && computer.handSum() <= 21) {
+                    showHand(false);
+                    showHand(true);
+                    System.out.println("\nOh, better luck next time. This game goes to the computer...");
+                    chips -= wager;
+                    System.out.println("PLAYER chips: " + (int) chips);
+                    System.out.println("Keep going? (Y/N)");
+                    answer = in.next();
+                    if (answer.equals("Y") || answer.equals("y")) {
+                        new Blackjack().play();
+                    } else if (answer.equals("N") || answer.equals("n")) {
+                        System.out.println("\nSee ya next time!");
+                    }
+                } else if (player.handSum() > 21 && computer.handSum() > 21) {
+                    showHand(false);
+                    showHand(true);
+                    System.out.println("\nIt's a tie!");
+                    System.out.println("Keep going? (Y/N)");
+                    answer = in.next();
+                    if (answer.equals("Y") || answer.equals("y")) {
+                        new Blackjack().play();
+                    } else if (answer.equals("N") || answer.equals("n")) {
+                        System.out.println("\nSee ya next time!");
+                    }
                 }
                 break;
             }
@@ -80,7 +158,9 @@ public class Blackjack {
     }
 
     private char takeTurn(boolean cpu) {
-        showHand(cpu);
+        if (!cpu) {
+           showHand(false);
+        }
 
         Card card = requestCard(cpu);
         if (card == null) {
@@ -95,7 +175,7 @@ public class Blackjack {
 
         while (true) {
             if (!cpu) {
-                    System.out.print("PLAYER: Will you hit or stand?");
+                    System.out.print("PLAYER: Will you hit or stand? ");
                     String answer = in.nextLine().trim().toUpperCase();
 
                     if (answer.equals("HIT")) {
@@ -111,8 +191,6 @@ public class Blackjack {
             } else {
                     System.out.println("\nCPU: Will you hit or stand?");
                     String answer = computer.getCardByNeed();
-
-
 
                     if (answer.equals("HIT")) {
                         computer.takeCard(deck.remove(0));
@@ -133,8 +211,6 @@ public class Blackjack {
     private void showHand(boolean cpu) {
         if (!cpu) {
             System.out.println("\nPLAYER hand: " + player.getHand());
-        } else if (cpu && multiplayer) {
-            System.out.println("\nPLAYER 2 hand: " + computer.getHand());
         } else {
             System.out.println("CPU hand: " + computer.getHand());
         }
@@ -154,21 +230,22 @@ public class Blackjack {
         System.out.println("#                                                                             #");
         System.out.println("###############################################################################");
 
+        Scanner in = new Scanner(System.in);
+        System.out.print("\nHow many chips will you buy in for? ");
+        chips = in.nextInt();
 
-        String option;
-        Scanner init = new Scanner(System.in);
-        boolean multiplayer;
-        while (true) {
-            System.out.print("Will you be playing cpu or multiplayer? (M for multiplayer and C for CPU): ");
-            option = init.nextLine().toUpperCase();
-            if (option.equals("M")) {
-                multiplayer = true;
-                break;
-            } else if (option.equals("C")) {
-                multiplayer = false;
-                break;
+        do {
+            System.out.print("\nHow many chips will you wager this round? ");
+            wager = in.nextInt();
+
+            if (wager < 1 || wager > 25) {
+                System.out.print("\nPlease wager at least 1 chip and at most 25 chips.");
+            } else if (chips < wager) {
+                System.out.print("\nInsufficient funds.");
             }
-        }
-        new Blackjack(multiplayer).play();
+        } while (wager < 1 || wager > 25);
+
+
+        new Blackjack().play();
     }
 }

@@ -1,10 +1,9 @@
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 public class Player {
 
-    private final List<Card> hand;
+    public final List<Card> hand;
     private final List<String> books;
 
     public Player() {
@@ -52,30 +51,7 @@ public class Player {
         return "";
     }
 
-    private int findCard(Card card){
-        for (int i = 0; i < hand.size(); i++) {
-            if (hand.get(i).getRank().equals(card.getRank())) {
-                return i;
-            }
-        }
-
-        return -1;
-    }
-
-    private boolean removeSets ( int index){
-        books.add(hand.get(index).getRank());
-
-        for (int i = 0; i < 4; i++) {
-            hand.remove(index);
-        }
-
-        sortHand();
-        sortBooks();
-
-        return true;
-    }
-
-    private void sortHand () {
+    private void sortHand() {
         hand.sort((a, b) -> {
             if (Card.getOrderedRank(a.getRank()) == Card.getOrderedRank(b.getRank())) {
                 return Card.getOrderedSuit(a.getSuit()) - Card.getOrderedSuit(b.getSuit());
@@ -85,32 +61,54 @@ public class Player {
         });
     }
 
-    private void sortBooks() {
-        books.sort(Comparator.comparingInt(Card::getOrderedRank));
-    }
-
     public int handSum() {
         int sum = 0;
+        int nextCardRank = 0;
 
         for (Card card : hand) {
-            int nextCardRank = 0;
-
-            try {
-                nextCardRank = Integer.parseInt(card.getRank());
-            } catch (NumberFormatException e) {
                 switch (card.getRank()) {
+                    case "2":
+                        nextCardRank = 2;
+                        break;
+                    case "3":
+                        nextCardRank = 3;
+                        break;
+                    case "4":
+                        nextCardRank = 4;
+                        break;
+                    case "5":
+                        nextCardRank = 5;
+                        break;
+                    case "6":
+                        nextCardRank = 6;
+                        break;
+                    case "7":
+                        nextCardRank = 7;
+                        break;
+                    case "8":
+                        nextCardRank = 8;
+                        break;
+                    case "9":
+                        nextCardRank = 9;
+                        break;
                     case "T":
                     case "J":
                     case "Q":
                     case "K":
                         nextCardRank = 10;
+                        break;
                     case "A":
-                        nextCardRank = 11;
+                        if (sum > 10) {
+                            nextCardRank = 1;
+                        } else {
+                            nextCardRank = 11;
+                        }
+                        break;
                 }
 
-                sum += nextCardRank;
+                sum = sum + nextCardRank;
             }
-        }
         return sum;
+        }
     }
-}
+
